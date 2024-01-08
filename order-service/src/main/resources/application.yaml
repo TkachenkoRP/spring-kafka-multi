@@ -1,0 +1,9 @@
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKER_HOST:localhost}:9092
+
+app:
+  kafka:
+    kafkaOrderTopic: "order-topic"
+    kafkaOrderGroupId: "kafka-order-group-id"
+    kafkaStatusTopic: "order-status-topic"

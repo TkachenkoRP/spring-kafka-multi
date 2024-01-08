@@ -1,0 +1,40 @@
+version: '3'
+services:
+  zookeeper_multi:
+    image: confluentinc/cp-zookeeper:6.2.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka_multi:
+    image: confluentinc/cp-kafka:6.2.0
+    depends_on:
+      - zookeeper_multi
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper_multi:2181
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO, kafka.producer.async.DefaultEventHandler=INFO, state.change.logger=INFO"
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://$DOCKERHOST:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPIC_ENABLE: 'true'
+
+  order_multi:
+    image: order-app_multi
+    ports:
+      - "8088:8080"
+    depends_on:
+      - zookeeper_multi
+      - kafka_multi
+    environment:
+      KAFKA_BROKER_HOST: $DOCKERHOST
+
+  order-status_multi:
+    image: order-status-app_multi
+    depends_on:
+      - order_multi
+    environment:
+      KAFKA_BROKER_HOST: $DOCKERHOST
